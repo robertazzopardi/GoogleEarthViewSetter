@@ -25,6 +25,7 @@
 /* Begin PBXFileReference section */
 		D857D49E249BADEC00FFE64D /* GoogleEarthViewSetter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GoogleEarthViewSetter; sourceTree = BUILT_PRODUCTS_DIR; };
 		D857D4A1249BADEC00FFE64D /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		D857D4A8249BAEFE00FFE64D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +58,7 @@
 		D857D4A0249BADEC00FFE64D /* GoogleEarthViewSetter */ = {
 			isa = PBXGroup;
 			children = (
+				D857D4A8249BAEFE00FFE64D /* README.md */,
 				D857D4A1249BADEC00FFE64D /* main.swift */,
 			);
 			path = GoogleEarthViewSetter;
