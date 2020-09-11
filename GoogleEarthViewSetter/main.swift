@@ -51,9 +51,6 @@ extension NSImage {
 
 class Main { 
     //"https://www.gstatic.com/prettyearth/assets/full/[HERE].jpg"
-    let homeDirectory: URL
-    let thisFolder: URL
-    let logPath: URL
     let fileManager: FileManager
     var sequence: [Int]!
     let lowerBound = 1000, upperBound = 14794
@@ -61,32 +58,36 @@ class Main {
     init() {
         self.fileManager = FileManager.default
         
-        self.homeDirectory = fileManager.urls(for: .picturesDirectory, in: .userDomainMask).first!
+        let homeDirectory = fileManager.urls(for: .picturesDirectory, in: .userDomainMask).first!
         
-        self.thisFolder = homeDirectory.appendingPathComponent("GoogleEarthViewer")
+        let thisFolder = homeDirectory.appendingPathComponent("GoogleEarthViewer")
         
-        self.logPath = thisFolder.appendingPathComponent("EarthViewLog.txt")
+        
         
         if !fileManager.fileExists(atPath: thisFolder.path) {
             do {
-                try fileManager.createDirectory(atPath: thisFolder.path, withIntermediateDirectories: true, attributes: nil)
+                try fileManager.createDirectory(atPath: thisFolder.path, 
+                                                withIntermediateDirectories: true, 
+                                                attributes: nil)
             } catch {
                 print(error.localizedDescription);
             }
         }
         
-        if !fileManager.fileExists(atPath: logPath.path) {
-            fileManager.createFile(atPath: logPath.path, contents: "".data(using: .utf8))
-        }   
+        self.sequence = generateRandomUniqueNumbers3(forLowerBound: lowerBound, 
+                                                     andUpperBound: upperBound, 
+                                                     andNumNumbers: upperBound-lowerBound)
         
-        self.sequence = generateRandomUniqueNumbers3(forLowerBound: lowerBound, andUpperBound: upperBound, andNumNumbers: upperBound-lowerBound)
+        self.setBackground(0, thisFolder)
     }
     
     fileprivate func randomNumber(between lower: Int, and upper: Int) -> Int {
         return Int(arc4random_uniform(UInt32(upper - lower))) + lower
     }
     
-    fileprivate func generateRandomUniqueNumbers3(forLowerBound lower: Int, andUpperBound upper:Int, andNumNumbers iterations: Int) -> [Int] {
+    fileprivate func generateRandomUniqueNumbers3(forLowerBound lower: Int, 
+                                                  andUpperBound upper:Int, 
+                                                  andNumNumbers iterations: Int) -> [Int] {
         /// create a unique sequence from the bounds 
         guard iterations <= (upper - lower) else { return [] }
         var numbers: Set<Int> = Set<Int>()
@@ -99,7 +100,12 @@ class Main {
         return numbers.map{ $0 }
     }
     
-    fileprivate func writeLog(_ file: String) {
+    fileprivate func writeLog(_ file: String, _ thisFolder: URL) {
+        let logPath = thisFolder.appendingPathComponent("EarthViewLog.txt")
+        if !fileManager.fileExists(atPath: logPath.path) {
+            fileManager.createFile(atPath: logPath.path, contents: "".data(using: .utf8))
+        }  
+        
         let text = try! String(contentsOf: logPath, encoding: String.Encoding.utf8)
         let lines = text.components(separatedBy: CharacterSet.newlines)
         
@@ -131,7 +137,8 @@ class Main {
         return f1.1 < f2.1
     }
     
-    fileprivate func saveFile(_ data: Data?, _ wallpaper: URL) {
+    /// saves the image in the pictures directory
+    fileprivate func saveFile(_ data: Data?, _ wallpaper: URL, _ thisFolder: URL) {
         do {
             /// gets the file information of the files in the projects folder and store in a list
             let fileNames = try fileManager.contentsOfDirectory(atPath: thisFolder.path)
@@ -154,6 +161,7 @@ class Main {
         }
     }
     
+    /// sets the desktop wallpaper with the found url for all of the screens 
     fileprivate func setWallpaper(_ wallpaper: URL) {
         /// set the background for every screen available
         for screen in NSScreen.screens {
@@ -166,9 +174,11 @@ class Main {
         }
     }
     
-    fileprivate func setBackground(_ number: Int) {
+    /// main driver function 
+    fileprivate func setBackground(_ number: Int, _ thisFolder: URL) {
         /// choose a random number from the squence
         let r = sequence[number]
+        
         /// add to the path where the picture should be saved
         let wallpaper = thisFolder.appendingPathComponent("\(r).jpg")
         let url = URL(string: "https://www.gstatic.com/prettyearth/assets/full/\(r).jpg")!
@@ -184,15 +194,15 @@ class Main {
             
             /// check the response code is valid else call setBackground to try another url
             guard 200 ..< 299 ~= httpResponse.statusCode else {
-                self.setBackground(number+1)
+                self.setBackground(number+1, thisFolder)
                 return
             }
             
-            self.saveFile(data, wallpaper)
+            self.saveFile(data, wallpaper, thisFolder)
             
             self.setWallpaper(wallpaper)
             
-            self.writeLog(url.absoluteString)
+            self.writeLog(url.absoluteString, thisFolder)
             
             /// exit when done
             exit(EXIT_SUCCESS)
@@ -204,5 +214,6 @@ class Main {
     }
 }
 
-let start = Main()
-start.setBackground(0)
+//let start = Main()
+//start.setBackground(0)
+let _ = Main()
